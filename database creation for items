@@ -1,0 +1,45 @@
+<?php
+try {
+    // Create a new PDO connection to your MySQL database
+    $pdo = new PDO('mysql:host=localhost;dbname=your_database_name', 'your_username', 'your_password');
+    
+    // Set the PDO error mode to exception
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // Create a table to store item information
+    $createTableSQL = "
+    CREATE TABLE IF NOT EXISTS items (
+        item_id INT AUTO_INCREMENT PRIMARY KEY,
+        item_name VARCHAR(255) NOT NULL,
+        selling_price DECIMAL(10, 2) NOT NULL,
+        stock_quantity INT NOT NULL,
+        items_sold INT NOT NULL
+    )";
+    
+    $pdo->exec($createTableSQL);
+
+    // Function to insert a new item into the database
+    function addItem($pdo, $item_name, $selling_price, $stock_quantity, $items_sold) {
+        $sql = "INSERT INTO items (item_name, selling_price, stock_quantity, items_sold) VALUES (?, ?, ?, ?)";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$item_name, $selling_price, $stock_quantity, $items_sold]);
+    }
+
+    // Function to retrieve item information
+    function getItem($pdo, $item_id) {
+        $sql = "SELECT * FROM items WHERE item_id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$item_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Example usage
+    addItem($pdo, 'Widget A', 19.99, 100, 10);
+    addItem($pdo, 'Widget B', 29.99, 50, 5);
+
+    // Close the database connection
+    $pdo = null;
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+}
+?>
